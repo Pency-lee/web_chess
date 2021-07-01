@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>五子棋</title>
+    <style type="text/css">
+        body
+        {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas width="640" id="canvas" onmousedown="play(event)" height="640">你的浏览器不支持HTML5 canvas  ，请使用 google chrome 浏览器 打开.
+    </canvas>
+    <div>
+
+        <span  th:text="玩家ID  "></span>
+        <span  th:text="${id}"></span>
+    </div>
+    <input id="fightid" type="hidden" th:value="${id}">
+    <div>
+</div>
+<script src="../js/jquery.min.js"></script>
+<script src="../js/wuziqi.js"></script>
+</body>
+</html>

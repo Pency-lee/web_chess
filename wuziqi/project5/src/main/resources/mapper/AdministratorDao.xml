@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chess06.chess06.dao.AdministratorDao">
+    <insert id="insertAdministrator" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="Administrator">
+        insert into administrator(name,password) values (#{name},#{password})
+    </insert>
+
+    <select id="queryAdministratorById" parameterType="int" resultType="Administrator">
+        select * from administrator where id=#{id}
+    </select>
+
+    <delete id="deleteAdministrator" parameterType="int">
+        delete from administrator where id=#{id}
+    </delete>
+
+    <select id="selectAllAdministrator" resultType="Administrator">
+        select * from administrator
+    </select>
+</mapper>

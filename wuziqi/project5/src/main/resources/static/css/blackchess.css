@@ -1,0 +1,9 @@
+#but1 {
+  border: 0;
+  width: 220px;
+  height: 220px;
+  background: url(../images/blackchess.png);
+  background-size: 100%;
+  border: 2px solid #4abe43;
+  border-radius: 50%;
+}

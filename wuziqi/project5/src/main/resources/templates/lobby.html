@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<script src="../js/jquery.min.js"></script>
+<head>
+
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .room{
+            width: 240px;
+            float: left;
+            height: 100px;
+            line-height: 100px;
+            border: 1px solid #e73480;
+            margin: 10px 10px;
+            display: flex;
+        }
+        .info {
+            width: 140px;
+            height: 100px;
+            border: 1px solid #03ff08;
+            margin: 10px 10px;
+            flex-direction: column;
+            display: flex;
+            position: fixed;
+            right: 0px;
+        }
+        .left,.right{
+            flex: 1;
+            width:80px;
+            text-align: center;
+            height: 100%;
+        }
+        .center{
+            flex: 1;
+            color: #006699;
+            width: 80px;
+            height: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+</div>
+<!--<div class="room" data-room="1">
+    <span class="left">玩家1</span>
+    <span class="center">桌子</span>
+    <span class="right">玩家2</span>
+</div>-->
+<input type="hidden" th:value="${name}" id="name"/>
+<input type="hidden" th:value="${userId}" id="userId"/>
+<input type="hidden" th:value="${point}" id="point"/>
+<!--<input type="hidden" th:value="${chessboardId}" id="id"/>-->
+</body>
+<script type="text/javascript">
+    var user = {name:"",roomId: -1,type: "hangOut",chessing:false,userId:-1,point:-1}; // 玩家当前角色——玩家(player)/观众(viewer)/游客(hangOut)
+    if(sessionStorage.getItem("user")){
+        user = JSON.parse(sessionStorage.getItem("user"));
+    }
+    while(!user.name){
+        user.name = $("#name").val();
+        user.userId=$("#userId").val();
+        user.point=$("#point").val();
+
+        // console.log(test);
+        // user.name=window.prompt("请给你起一个响亮的名字","玩家姓名");
+        sessionStorage.setItem("user",JSON.stringify(user));
+    }
+
+    var rooms = []; // 每个房间有房间号id,玩家1{name:赵德升}，玩家2，观众[{name:solid}]，棋盘chessBoard
+    var roomCount = 0;
+    var users = [];
+    var left, right, center;
+
+
+
+    var wrapper = getClass("wrapper")[0];
+    function initUi(){
+        var htmlStr = "";
+        for(let i=0;i<roomCount;i++){
+            htmlStr += '<div class="room" data-room='+i+'>'+
+                '<span class="left">'+"玩家1"+'</span>'+
+                '<span class="center">桌子'+i+'</span>'+
+                '<span class="right">玩家2</span>'+
+                '</div>';
+        }
+        htmlStr += '<div class="info" >'+
+            '<span>用户ID：'+user.userId+'</span>'+
+            '<span>用户名：'+user.name+'</span>'+
+            '<span>积分：'+user.point+'</span>'+
+            '<button class="layui-btn" onclick="window.open(\'admin-cate.html?userId='+user.userId+'\')" name="userId" id="btn1">个人中心</button>' +
+            '</div>';
+        //document.getElementById('btn1').innerText=user.userId;
+        wrapper.innerHTML = htmlStr;
+        // username = getClass("userName");
+        // username[0].innerText = "用户名: " + user.name;
+
+        for(let i=0;i<roomCount;i++){
+            rooms[i] = {};
+            rooms[i].id = i;
+            rooms[i].player1 = {};
+            rooms[i].player2 = {};
+            rooms[i].viewers = [];
+            rooms[i].chessBoard = [];
+        }
+
+        left = getClass("left");
+        for(let i=0;i<left.length;i++){
+            left[i].onclick = function(){
+                if(!rooms[i].player1.name){
+                    clearUsers();
+                    user.roomId = i;
+                    user.type = "player1";
+                    rooms[i].player1 = user;
+                    this.innerText = user.name;
+                    sendUserMsg();
+                    goToChess(i);
+                }else{
+                    alert("此位置已经有人了");
+                }
+            }
+        }
+
+        right = getClass("right");
+        for(let i=0;i<right.length;i++){
+            right[i].onclick = function(){
+                if(!rooms[i].player2.name){
+                    clearUsers();
+                    user.roomId = i;
+                    user.type = "player2";
+                    rooms[i].player2 = user;
+                    this.innerText = user.name;
+                    sendUserMsg();
+                    goToChess(i);
+                }else{
+                    alert("此位置已经有人了");
+                }
+            }
+        }
+
+        center = getClass("center");
+        for(let i=0;i<center.length;i++){
+            center[i].onclick = function(){
+                if(rooms[i].player1.name && rooms[i].player2.name){
+                    clearUsers();
+                    user.roomId = i;
+                    user.type = "viewer";
+                    rooms[i].player1 = user;
+                    sendUserMsg();
+                    goToChess(i);
+                }else{
+                    alert("这里人手不够，不可以观战哦~");
+                }
+            }
+        }
+    }
+
+    function getClass(className){
+        return document.getElementsByClassName(className);
+    }
+
+    function goToChess(roomId){
+        if(rooms[roomId].player1.name && rooms[roomId].player2.name){
+            if(user.roomId == roomId && !user.chessing){
+                user.chessing = true;
+
+               window.open("battle.html?roomId="+roomId+
+                   "&player1="+rooms[roomId].player1.name+
+                   "&point1="+rooms[roomId].player1.point+
+                   "&userId1="+rooms[roomId].player1.userId+
+                   "&player2="+rooms[roomId].player2.name+
+                   "&point2="+rooms[roomId].player2.point+
+                   "&userId2="+rooms[roomId].player2.userId)
+                    ;
+                // $.ajax({
+                //     url:'./battle',
+                //     traditional:true,
+                //     type:'get',
+                //     dataType:'json',
+                //     data:{
+                //         "userId1":player1.userId,
+                //         "userId2":player2.userId
+                //     },
+                //     success:function (data){
+                //
+                //     }
+                // })
+
+            }
+        }
+    }
+
+    function clearUsers(){
+        for(let i = 0;i<left.length;i++){
+            left[i].innerText = "玩家1";
+        }
+        for(let i = 0;i<right.length;i++){
+            right[i].innerText = "玩家2";
+        }
+        for(let i=0;i<roomCount;i++){
+            rooms[i] = {};
+            rooms[i].id = i;
+            rooms[i].player1 = {};
+            rooms[i].player2 = {};
+            rooms[i].viewers = [];
+            rooms[i].chessBoard = [];
+        }
+    }
+
+    function showUsers(){
+        clearUsers();
+        for(let i=0;i<users.length;i++){
+            console.log(users)
+            if(users[i].roomId>=0){
+                if(users[i].type == "player1"){//玩家1
+                    rooms[users[i].roomId].player1 = users[i];
+                    left[users[i].roomId].innerText = users[i].name;
+                }else if(users[i].type == "player2"){//玩家2
+                    rooms[users[i].roomId].player2 = users[i];
+                    right[users[i].roomId].innerText = users[i].name;
+                }else{//观众
+
+                }
+
+                goToChess(users[i].roomId);
+            }
+        }
+    }
+
+    /*left.map((val,index,arr)=>{
+        val.onclick = function(){
+            var val = window.prompt("请输入你的姓名");
+            val.innerText = val;
+        }
+    });*/
+
+    var ws = new WebSocket('ws://127.0.0.1:9009');
+    ws.onopen = function(e){
+        sendUserMsg();
+
+    }
+
+    ws.onerror = function(e){
+        console.log("链接服务器失败");
+        user.chessing = false;
+    }
+
+    ws.onclose = function(e){
+        console.log("链接断开");
+        user.chessing = false;
+    }
+
+    ws.onmessage = function(e){
+        console.log(e.data);
+        var data = JSON.parse(e.data);
+        switch(data.type){
+            case "baseMsg":
+                roomCount = data.data.roomCount;
+                initUi();
+                break;
+            case "usersMsg":
+                users = data.data;
+                showUsers();
+                break;
+            case "users":
+
+                break;
+            default:;
+        }
+    }
+
+    function sendUserMsg(){
+        var msg = {};
+        msg.type = "user";
+        msg.data = user;
+        ws.send(JSON.stringify(msg));
+    }
+
+    function recieveMsg(d){
+        console.log(d);
+    }
+</script>
+
+</html>

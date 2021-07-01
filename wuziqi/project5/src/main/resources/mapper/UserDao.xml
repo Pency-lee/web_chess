@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chess06.chess06.dao.UserDao">
+    <insert id="insertUser" useGeneratedKeys="true"  keyProperty="id" keyColumn="id" parameterType="User">
+        insert into user(name,password,point) values (#{name},#{password},#{point})
+    </insert>
+
+    <select id="queryUserById" parameterType="int" resultType="User">
+        select *
+        from user where id=#{id};
+    </select>
+
+    <update id="addPoint" parameterType="int">
+        update user set point=point+1 where id=#{id}
+    </update>
+
+
+    <update id="updateUser" parameterType="User">
+        update user set name =#{name} , password = #{password}
+
+        where id=#{id}
+    </update>
+
+    <delete id="deleteUser" parameterType="int">
+        delete from user where id=#{id}
+    </delete>
+
+    <select id="descSortByPoint" resultType="User">
+        select * from user order by point desc
+    </select>
+</mapper>

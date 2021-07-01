@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chess06.chess06.dao.ChessboardDao">
+
+
+    <insert id="insertChessboard" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="Chessboard">
+        insert into Chessboard(time)values (current_timestamp)
+    </insert>
+
+    <update id="updateChessboardDetails" parameterType="Chessboard">
+        update Chessboard set details=#{details},winnerId=#{winnerId},loserId=#{loserId} where id=#{id}
+    </update>
+
+    <update id="updateChessboardWinner" parameterType="Chessboard">
+        update Chessboard set winnerId=#{winnerId},loserId=#{loserId} where id=#{id}
+    </update>
+
+    <select id="queryChessboard" parameterType="Chessboard" resultType="Chessboard">
+        select * from Chessboard where id=#{id}
+    </select>
+
+    <select id="queryChessboardIdByUserId" parameterType="int" resultType="int">
+        select id from Chessboard where winnerId=#{id} or loserId=#{id}
+    </select>
+
+
+</mapper>
